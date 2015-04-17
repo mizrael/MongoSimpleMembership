@@ -24,7 +24,7 @@ namespace LyphTEC.MongoSimpleMembership.Services
         static MongoDataContext()
         {
             // Init Mongo mappings & set configuration options etc
-            DateTimeSerializationOptions.Defaults = new DateTimeSerializationOptions(DateTimeKind.Utc, BsonType.Document);
+            //DateTimeSerializationOptions.Defaults = new DateTimeSerializationOptions(DateTimeKind.Utc, BsonType.Document);
 
             if (!BsonClassMap.IsClassMapRegistered(typeof (MembershipAccount)))
             {
@@ -32,7 +32,8 @@ namespace LyphTEC.MongoSimpleMembership.Services
                                                                      {
                                                                          cm.AutoMap();
                                                                          cm.SetIdMember(cm.GetMemberMap(x => x.UserId));
-                                                                         cm.IdMemberMap.SetRepresentation(BsonType.Int32).SetIdGenerator(IntIdGenerator.Instance);
+                                                                         cm.IdMemberMap.SetIdGenerator(IntIdGenerator.Instance);
+                                                                         //cm.IdMemberMap.SetRepresentation(BsonType.Int32).SetIdGenerator(IntIdGenerator.Instance);
                                                                          cm.GetMemberMap(x => x.UserName).SetIsRequired(true);
                                                                          cm.SetIgnoreExtraElements(true);
                                                                      }
@@ -45,7 +46,8 @@ namespace LyphTEC.MongoSimpleMembership.Services
                                                         {
                                                             cm.AutoMap();
                                                             cm.SetIdMember(cm.GetMemberMap(x => x.RoleId));
-                                                            cm.IdMemberMap.SetRepresentation(BsonType.Int32).SetIdGenerator(IntIdGenerator.Instance);
+                                                            cm.IdMemberMap.SetIdGenerator(IntIdGenerator.Instance);
+                                                            //cm.IdMemberMap.SetRepresentation(BsonType.Int32).SetIdGenerator(IntIdGenerator.Instance);
                                                             cm.GetMemberMap(x => x.RoleName).SetIsRequired(true);
                                                             cm.SetIgnoreExtraElements(true);
                                                         }
@@ -58,7 +60,8 @@ namespace LyphTEC.MongoSimpleMembership.Services
                                                               {
                                                                   cm.AutoMap();
                                                                   cm.SetIdMember(cm.GetMemberMap(x => x.Id));
-                                                                  cm.IdMemberMap.SetRepresentation(BsonType.ObjectId).SetIdGenerator(BsonObjectIdGenerator.Instance);
+                                                                 // cm.IdMemberMap.SetIdGenerator(BsonObjectIdGenerator.Instance);
+                                                                  //cm.IdMemberMap.SetRepresentation(BsonType.ObjectId).SetIdGenerator(BsonObjectIdGenerator.Instance);
                                                                   cm.GetMemberMap(x => x.Token).SetIsRequired(true);
                                                                   cm.GetMemberMap(x => x.Secret).SetIsRequired(true);
                                                                   cm.SetIgnoreExtraElements(true);
@@ -72,7 +75,9 @@ namespace LyphTEC.MongoSimpleMembership.Services
                                                                    {
                                                                        cm.AutoMap();
                                                                        cm.SetIdMember(cm.GetMemberMap(x => x.Id));
-                                                                       cm.IdMemberMap.SetRepresentation(BsonType.ObjectId).SetIdGenerator(BsonObjectIdGenerator.Instance);
+
+                                                                     //  cm.IdMemberMap.SetIdGenerator(BsonObjectIdGenerator.Instance);
+                                                                      // cm.IdMemberMap.SetRepresentation(BsonType.ObjectId).SetIdGenerator(BsonObjectIdGenerator.Instance);
                                                                        cm.GetMemberMap(x => x.Provider).SetIsRequired(true);
                                                                        cm.GetMemberMap(x => x.ProviderUserId).SetIsRequired(true);
                                                                        cm.SetIgnoreExtraElements(true);
@@ -194,10 +199,10 @@ namespace LyphTEC.MongoSimpleMembership.Services
             var col = _db.GetCollection<T>(GetCollectionName<T>());
             
             var result = col.Save(item, WriteConcern.Acknowledged);
-            
+
             ValidWriteResult(result);
 
-            return result.Ok;
+            return true;
         }
 
         public bool RemoveById<T>(object id) where T : class
@@ -213,7 +218,7 @@ namespace LyphTEC.MongoSimpleMembership.Services
 
             ValidWriteResult(result);
 
-            return result.Ok;
+            return true;
         }
 
         public MembershipAccount GetUser(string userName)
@@ -260,8 +265,7 @@ namespace LyphTEC.MongoSimpleMembership.Services
                 var query = Query.EQ("UserId", BsonValue.Create(userId));
                 var result = _oAuthMembershipCol.Remove(query, WriteConcern.Acknowledged);
 
-                if (!result.Ok && result.HasLastErrorMessage)
-                    Trace.TraceError("MongoDataContext.RemoveOAuthMembershipsByUserId() Remove ERROR: {0}", result.LastErrorMessage);
+                ValidWriteResult(result);
             }
             catch (Exception ex)
             {
@@ -269,10 +273,12 @@ namespace LyphTEC.MongoSimpleMembership.Services
             }
         }
 
-        private static void ValidWriteResult(GetLastErrorResult result)
+        private static void ValidWriteResult(WriteConcernResult result)
         {
-           if (!result.Ok && result.HasLastErrorMessage) 
-               throw new ProviderException(result.LastErrorMessage);
+            if (null == result)
+                throw new ProviderException();
+            if (result.HasLastErrorMessage)
+                throw new ProviderException(result.LastErrorMessage);
         }
     }
 }

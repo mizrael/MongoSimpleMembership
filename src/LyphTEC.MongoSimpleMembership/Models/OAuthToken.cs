@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Configuration;
+using MongoDB.Bson;
 
 namespace LyphTEC.MongoSimpleMembership.Models
 {
@@ -19,7 +20,7 @@ namespace LyphTEC.MongoSimpleMembership.Models
             Secret = secret;
         }
 
-        public object Id { get; set; }
+        public ObjectId Id { get; set; }
         public string Token { get; private set; }
         public string Secret { get; set; }
 

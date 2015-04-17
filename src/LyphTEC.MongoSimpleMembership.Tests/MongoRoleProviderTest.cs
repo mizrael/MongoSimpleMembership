@@ -7,21 +7,16 @@ using Xunit;
 
 namespace LyphTEC.MongoSimpleMembership.Tests
 {
-    // ReSharper disable InconsistentNaming
-    public class MongoRoleProviderTest : IUseFixture<RoleProviderTestFixture>
+    public class MongoRoleProviderTest 
     {
         private RoleProviderTestFixture _fixture;
         private MongoRoleProvider _provider;
 
-        #region IUseFixture<RoleProviderTestFixture> Members
-
-        public void SetFixture(RoleProviderTestFixture data)
+        public MongoRoleProviderTest()
         {
-            _fixture = data;
-            _provider = data.Provider;
+            _fixture = new RoleProviderTestFixture();
+            _provider = _fixture.Provider;
         }
-
-        #endregion
 
         [Fact]
         public void ThrowsException_When_ConnectionStringNotConfigured()

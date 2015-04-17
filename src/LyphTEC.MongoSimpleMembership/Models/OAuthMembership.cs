@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Configuration;
+using MongoDB.Bson;
 
 namespace LyphTEC.MongoSimpleMembership.Models
 {
@@ -24,7 +25,7 @@ namespace LyphTEC.MongoSimpleMembership.Models
             UserId = userId;
         }
 
-        public object Id { get; set; }
+        public ObjectId Id { get; set; }
 
         /// <summary>
         /// Gets the provider name

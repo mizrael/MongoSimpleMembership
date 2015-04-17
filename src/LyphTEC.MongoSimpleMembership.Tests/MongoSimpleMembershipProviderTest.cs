@@ -14,20 +14,16 @@ namespace LyphTEC.MongoSimpleMembership.Tests
 {
     // ReSharper disable InconsistentNaming
 
-    public class MongoSimpleMembershipProviderTest : IUseFixture<MembershipProviderTestFixture>
+    public class MongoSimpleMembershipProviderTest
     {
         private MembershipProviderTestFixture _fixture;
         private MongoSimpleMembershipProvider _provider;
 
-        #region IUseFixture<MembershipProviderTestFixture> Members
-
-        public void SetFixture(MembershipProviderTestFixture data)
+        public MongoSimpleMembershipProviderTest()
         {
-            _fixture = data;
-            _provider = data.Provider;
+            _fixture = new MembershipProviderTestFixture();
+            _provider = _fixture.Provider;
         }
-
-        #endregion
 
         [Fact]
         public void ThrowsException_When_ConnectionStringNotConfigured()
@@ -135,7 +131,7 @@ namespace LyphTEC.MongoSimpleMembership.Tests
 
             Assert.True(result);
 
-            Assert.Equal(0, _fixture.Users.Count());
+            Assert.Equal(0, _fixture.Users.Count(u => u.UserName.Equals("User1")));
         }
 
         [Fact]
@@ -312,7 +308,7 @@ namespace LyphTEC.MongoSimpleMembership.Tests
             _provider.CreateOrUpdateOAuthAccount("Test", "ProviderUserId2", "User1");
             Assert.Equal(2, _fixture.OAuthMemberships.Count(x => x.UserId == 1));
 
-            _fixture.OAuthMemberships.PrintDump();
+        //    _fixture.OAuthMemberships.PrintDump();
 
             // TODO: update existing user
         }
@@ -320,9 +316,11 @@ namespace LyphTEC.MongoSimpleMembership.Tests
         [Fact]
         public void DeleteOAuthAccount()
         {
-           _provider.DeleteOAuthAccount("Test", "User1@Test");
+            var providerUserId = "User1@Test";
+            var provider = "Test";
+            _provider.DeleteOAuthAccount("Test", providerUserId);
 
-            Assert.Equal(0, _fixture.OAuthMemberships.Count());
+            Assert.Equal(0, _fixture.OAuthMemberships.Count(u => u.ProviderUserId.Equals(providerUserId) && u.Provider.Equals(provider)));
         }
 
         [Fact]
@@ -405,10 +403,13 @@ namespace LyphTEC.MongoSimpleMembership.Tests
         [Fact]
         public void DeleteUser()
         {
-            Assert.True(_provider.DeleteUser("User1", true));
+            var username = "User1";
+            var user = _fixture.Users.FirstOrDefault(u => u.UserName.Equals(username));
 
-            Assert.Equal(0, _fixture.Users.Count());
-            Assert.Equal(0, _fixture.OAuthMemberships.Count());
+            Assert.True(_provider.DeleteUser(username, true));
+
+            Assert.Equal(0, _fixture.Users.Count(u => u.UserName.Equals(username)));
+            Assert.Equal(0, _fixture.OAuthMemberships.Count(u => u.UserId == user.UserId));
         }
 
         [Fact]
